@@ -1,0 +1,8 @@
+# Request
+int32 container_id
+---
+# Response
+bool success
+string message
+geometry_msgs/Point32[] leg_centroids
+int32[] leg_ids
