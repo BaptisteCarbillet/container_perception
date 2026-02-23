@@ -69,11 +69,17 @@ void LegLocalizer::setCropBox(const geometry_msgs::msg::Polygon& poly, Eigen::Ve
 void LegLocalizer::correctingClusters(ClusterResult& leg_clusters, pcl::PointCloud<pcl::PointXYZ>::Ptr cropped_cloud) {
     //If there is less than 4 clusters, we do nothing, otherwise we merge the closest clusters until we have 4
     while (leg_clusters.clusters.size() > 4) {
+        if (leg_clusters.clusters.size() != leg_clusters.centroids.size()) {
+            RCLCPP_WARN(get_logger(), "Cluster/centroid size mismatch: clusters=%zu centroids=%zu", 
+                        leg_clusters.clusters.size(), leg_clusters.centroids.size());
+            break;
+        }
+
         float min_distance = std::numeric_limits<float>::max();
         size_t idx1 = 0;
         size_t idx2 = 0;
-        for (size_t i = 0; i < leg_clusters.centroids.size(); ++i) {
-            for (size_t j = i + 1; j < leg_clusters.centroids.size(); ++j) {
+        for (size_t i = 0; i < leg_clusters.clusters.size(); ++i) {
+            for (size_t j = i + 1; j < leg_clusters.clusters.size(); ++j) {
                 float distance = (leg_clusters.centroids[i] - leg_clusters.centroids[j]).norm();
                 if (distance < min_distance) {
                     min_distance = distance;
@@ -98,6 +104,7 @@ void LegLocalizer::correctingClusters(ClusterResult& leg_clusters, pcl::PointClo
 
         //Delete cluster idx2
         leg_clusters.clusters.erase(leg_clusters.clusters.begin() + idx2);
+        leg_clusters.centroids.erase(leg_clusters.centroids.begin() + idx2);
 
         // Recompute centroid for merged cluster
         Eigen::Vector4f new_centroid;

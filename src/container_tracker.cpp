@@ -35,6 +35,19 @@ ContainerTracker::ContainerTracker()
 
     id_publisher_ = this->create_publisher<std_msgs::msg::Int32>(
         "container_tracker/new_id_detected", rclcpp::QoS(rclcpp::KeepLast(10)).best_effort());
+
+
+    //Use_sim_time parameters
+    if (!this->has_parameter("use_sim_time")) {
+        this->declare_parameter<bool>("use_sim_time", false);
+        }
+    
+    bool use_sim_time = this->get_parameter("use_sim_time").as_bool();
+    if (use_sim_time) {
+        RCLCPP_INFO(this->get_logger(), "Using simulation time");
+    } else {
+        RCLCPP_INFO(this->get_logger(), "Using system time");
+    }
 }
 
 /**
